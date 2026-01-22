@@ -17,6 +17,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -57,6 +58,7 @@ public class ModuleIOReal implements ModuleIO {
   private final TalonFX driveTalon;
   private final SparkBase turnSpark;
   private final RelativeEncoder turnEncoder;
+  private final CANcoder canCoder;
 
   private final StatusSignal<Angle> drivePosition;
   private final StatusSignal<AngularVelocity> driveVelocity;
@@ -80,33 +82,34 @@ public class ModuleIOReal implements ModuleIO {
       new Debouncer(0.5, Debouncer.DebounceType.kFalling);
 
   public ModuleIOReal(int module) {
-    zeroRotation =
-        switch (module) {
-          case 0 -> frontLeftZeroRotation;
-          case 1 -> frontRightZeroRotation;
-          case 2 -> backLeftZeroRotation;
-          case 3 -> backRightZeroRotation;
-          default -> Rotation2d.kZero;
-        };
-    driveTalon =
-        new TalonFX(
-            switch (module) {
-              case 0 -> frontLeftDriveCanId;
-              case 1 -> frontRightDriveCanId;
-              case 2 -> backLeftDriveCanId;
-              case 3 -> backRightDriveCanId;
-              default -> 0;
-            });
-    turnSpark =
-        new SparkMax(
-            switch (module) {
-              case 0 -> frontLeftTurnCanId;
-              case 1 -> frontRightTurnCanId;
-              case 2 -> backLeftTurnCanId;
-              case 3 -> backRightTurnCanId;
-              default -> 0;
-            },
-            MotorType.kBrushless);
+    zeroRotation = switch (module) {
+      case 0 -> frontLeftZeroRotation;
+      case 1 -> frontRightZeroRotation;
+      case 2 -> backLeftZeroRotation;
+      case 3 -> backRightZeroRotation;
+      default -> Rotation2d.kZero;
+    };
+    driveTalon = new TalonFX(switch (module) {
+      case 0 -> frontLeftDriveCanId;
+      case 1 -> frontRightDriveCanId;
+      case 2 -> backLeftDriveCanId;
+      case 3 -> backRightDriveCanId;
+      default -> 0;
+    });
+    turnSpark = new SparkMax(switch (module) {
+      case 0 -> frontLeftTurnCanId;
+      case 1 -> frontRightTurnCanId;
+      case 2 -> backLeftTurnCanId;
+      case 3 -> backRightTurnCanId;
+      default -> 0;
+    }, MotorType.kBrushless);
+    canCoder = new CANcoder(switch (module) {
+      case 0 -> frontLeftCANCoderId;
+      case 1 -> frontRightCANCoderId;
+      case 2 -> backLeftCANCoderId;
+      case 3 -> backRightCANCoderId;
+      default -> 0;
+    });
     drivePosition = driveTalon.getPosition();
     driveVelocity = driveTalon.getVelocity();
     driveAppliedVolts = driveTalon.getMotorVoltage();
@@ -124,9 +127,7 @@ public class ModuleIOReal implements ModuleIO {
         .withKS(driveKs)
         .withKV(driveKv);
     driveConfig.Feedback.SensorToMechanismRatio = driveMotorReduction;
-    driveConfig.TorqueCurrent.PeakForwardTorqueCurrent = slipCurrent;
-    driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = -slipCurrent;
-    driveConfig.CurrentLimits.StatorCurrentLimit = slipCurrent;
+    driveConfig.CurrentLimits.StatorCurrentLimit = driveMotorCurrentLimit;
     driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     driveConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     PhoenixUtil.tryUntilOk(5, () -> driveTalon.getConfigurator().apply(driveConfig, 0.25));
@@ -140,32 +141,28 @@ public class ModuleIOReal implements ModuleIO {
         .smartCurrentLimit(turnMotorCurrentLimit)
         .voltageCompensation(12.0);
     turnConfig
-        .absoluteEncoder
-        .inverted(turnEncoderInverted)
+        .encoder
         .positionConversionFactor(turnEncoderPositionFactor)
         .velocityConversionFactor(turnEncoderVelocityFactor)
-        .averageDepth(2);
+        .uvwAverageDepth(2);
     turnConfig
         .closedLoop
-        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .positionWrappingEnabled(true)
         .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)
         .pid(turnKp, 0.0, turnKd);
     turnConfig
         .signals
-        .absoluteEncoderPositionAlwaysOn(true)
-        .absoluteEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency))
-        .absoluteEncoderVelocityAlwaysOn(true)
-        .absoluteEncoderVelocityPeriodMs(20)
+        .primaryEncoderPositionAlwaysOn(true)
+        .primaryEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency))
+        .primaryEncoderVelocityAlwaysOn(true)
+        .primaryEncoderVelocityPeriodMs(20)
         .appliedOutputPeriodMs(20)
         .busVoltagePeriodMs(20)
         .outputCurrentPeriodMs(20);
-    SparkUtil.tryUntilOk(
-        turnSpark,
-        5,
-        () ->
-            turnSpark.configure(
-                turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    SparkUtil.tryUntilOk(turnSpark, 5, () -> turnSpark.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+
+    SparkUtil.tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(canCoder.getPosition().getValue().in(Radians)));
 
     // Create odometry queues
     timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
