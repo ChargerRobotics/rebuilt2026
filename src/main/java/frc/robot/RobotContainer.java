@@ -27,6 +27,10 @@ import frc.robot.subsystems.led.Led;
 import frc.robot.subsystems.led.LedControlIO;
 import frc.robot.subsystems.led.LedControlIOCANdle;
 import frc.robot.subsystems.led.LedControlIOSim;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOSim;
 import frc.robot.subsystems.drive.ModuleIOReal;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -39,6 +43,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final Vision vision;
   private final Led led;
 
   // Controller
@@ -53,18 +58,21 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOReal(0), new ModuleIOReal(1), new ModuleIOReal(2), new ModuleIOReal(3));
+        vision = new Vision(new VisionIOLimelight("limelight", () -> drive.getRotation()));
         led = new Led(new LedControlIOCANdle(new CANdle(50)));
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
+        vision = new Vision(new VisionIOSim(() -> drive.getRotation()));
         led = new Led(new LedControlIOSim());
         break;
 
       default:
         // Replayed robot, disable IO implementations
         drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
+        vision = new Vision(new VisionIO() {});
         led = new Led(new LedControlIO() {});
         break;
     }
@@ -139,6 +147,10 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public Vision getVision() {
+    return vision;
   }
 }
 
