@@ -11,6 +11,7 @@ public class IntakeDeploy extends SubsystemBase {
 
   public IntakeDeploy(IntakeDeployIO io) {
     this.io = io;
+    retract();
   }
 
   @Override
@@ -21,7 +22,7 @@ public class IntakeDeploy extends SubsystemBase {
 
   public void deploy() {
     io.setMAXMotionPosition(Rotation2d.kZero);
-    Logger.recordOutput("Intake/Deploy/Goal", 0);
+    Logger.recordOutput("Intake/Deploy/Goal", 0.0);
   }
 
   public void retract() {
