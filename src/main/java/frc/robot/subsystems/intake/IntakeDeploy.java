@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeDeploy extends SubsystemBase {
@@ -19,12 +20,12 @@ public class IntakeDeploy extends SubsystemBase {
   }
 
   public void deploy() {
-    io.setMAXMotionPosition(0);
+    io.setMAXMotionPosition(Rotation2d.kZero);
     Logger.recordOutput("Intake/Deploy/Goal", 0);
   }
 
   public void retract() {
-    io.setMAXMotionPosition(Math.PI / 2);
+    io.setMAXMotionPosition(Rotation2d.fromDegrees(90));
     Logger.recordOutput("Intake/Deploy/Goal", Math.PI / 2);
   }
 }
