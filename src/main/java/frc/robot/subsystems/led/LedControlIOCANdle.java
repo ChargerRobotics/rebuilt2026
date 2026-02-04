@@ -10,8 +10,8 @@ public class LedControlIOCANdle implements LedControlIO {
 
   private String currentAnimation;
 
-  public LedControlIOCANdle(CANdle candle) {
-    this.candle = candle;
+  public LedControlIOCANdle(int id) {
+    this.candle = new CANdle(id);
   }
 
   @Override

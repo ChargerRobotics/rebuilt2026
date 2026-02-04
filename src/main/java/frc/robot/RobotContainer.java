@@ -77,7 +77,7 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOReal(0), new ModuleIOReal(1), new ModuleIOReal(2), new ModuleIOReal(3));
         vision = new Vision(new VisionIOLimelight("limelight", () -> drive.getRotation()), fieldLayout);
-        led = new Led(new LedControlIOCANdle(new CANdle(50)));
+        led = new Led(new LedControlIOCANdle(50));
         break;
 
       case SIM:
