@@ -27,10 +27,15 @@ import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeDeploy;
 import frc.robot.subsystems.intake.IntakeDeployIO;
 import frc.robot.subsystems.intake.IntakeDeployIOSim;
 import frc.robot.subsystems.intake.IntakeDeployIOSpark;
+import frc.robot.subsystems.intake.IntakeRoller;
+import frc.robot.subsystems.intake.IntakeRollerIO;
+import frc.robot.subsystems.intake.IntakeRollerIOSim;
+import frc.robot.subsystems.intake.IntakeRollerIOSpark;
 import frc.robot.subsystems.led.Led;
 import frc.robot.subsystems.led.LedControlIO;
 import frc.robot.subsystems.led.LedControlIOCANdle;
@@ -56,7 +61,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final IntakeDeploy intakeDeploy;
+  private final Intake intake;
   private final Vision vision;
   private final Led led;
 
@@ -81,7 +86,7 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOReal(0), new ModuleIOReal(1), new ModuleIOReal(2), new ModuleIOReal(3));
-        intakeDeploy = new IntakeDeploy(new IntakeDeployIOSpark());
+        intake = new Intake(new IntakeRollerIOSpark(), new IntakeDeployIOSpark());
         vision = new Vision(new VisionIOLimelight("limelight", () -> drive.getRotation()), fieldLayout);
         led = new Led(new LedControlIOCANdle(50));
         break;
@@ -89,7 +94,7 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
-        intakeDeploy = new IntakeDeploy(new IntakeDeployIOSim());
+        intake = new Intake(new IntakeRollerIOSim(), new IntakeDeployIOSim());
         vision = new Vision(new VisionIOSim(() -> drive.getRotation()), fieldLayout);
         led = new Led(new LedControlIOSim());
         break;
@@ -97,7 +102,7 @@ public class RobotContainer {
       default:
         // Replayed robot, disable IO implementations
         drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
-        intakeDeploy = new IntakeDeploy(new IntakeDeployIO() {});
+        intake = new Intake(new IntakeRollerIO() {}, new IntakeDeployIO() {});
         vision = new Vision(new VisionIO() {}, fieldLayout);
         led = new Led(new LedControlIO() {});
         break;
@@ -123,14 +128,14 @@ public class RobotContainer {
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
         "Deploy SysId (Quasistatic Forward)",
-        intakeDeploy.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        intake.deploySysIdQuasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Deploy SysId (Quasistatic Reverse)",
-        intakeDeploy.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        intake.deploySysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-        "Deploy SysId (Dynamic Forward)", intakeDeploy.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        "Deploy SysId (Dynamic Forward)", intake.deploySysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-        "Deploy SysId (Dynamic Reverse)", intakeDeploy.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        "Deploy SysId (Dynamic Reverse)", intake.deploySysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -176,7 +181,8 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.rightTrigger()
-      .whileTrue(IntakeCommands.deployAndIntake(intakeDeploy));
+      .whileTrue(IntakeCommands.deployAndIntake(intake)
+        .alongWith());
   }
 
   /**

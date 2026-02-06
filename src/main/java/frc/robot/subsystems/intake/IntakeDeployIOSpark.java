@@ -28,6 +28,7 @@ public class IntakeDeployIOSpark implements IntakeDeployIO {
     SparkMaxConfig config = new SparkMaxConfig();
     config
       .idleMode(IdleMode.kBrake)
+      .smartCurrentLimit(IntakeConstants.deployCurrentLimit)
       .voltageCompensation(12);
     config
       .encoder
@@ -36,9 +37,9 @@ public class IntakeDeployIOSpark implements IntakeDeployIO {
       .closedLoop
       .maxMotion
       .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
-      .cruiseVelocity(0.5 * Math.PI)
-      .maxAcceleration(Math.PI)
-      .allowedProfileError(0.2 * Math.PI);
+      .cruiseVelocity(IntakeConstants.deployCruiseVelocity)
+      .maxAcceleration(IntakeConstants.deployMaxAcceleration)
+      .allowedProfileError(IntakeConstants.deployAllowedProfileError);
     config
       .closedLoop
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -55,7 +56,7 @@ public class IntakeDeployIOSpark implements IntakeDeployIO {
   }
 
   @Override
-  public void updateInputs(IntakeDepoyIOInputs inputs) {
+  public void updateInputs(IntakeDeployIOInputs inputs) {
     inputs.position = Rotation2d.fromRadians(encoder.getPosition());
     inputs.appliedVolts = sparkMax.getAppliedOutput() * sparkMax.getBusVoltage();
     inputs.currentAmps = sparkMax.getOutputCurrent();

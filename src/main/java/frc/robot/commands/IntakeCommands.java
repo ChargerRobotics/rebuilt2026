@@ -2,29 +2,31 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.intake.IntakeDeploy;
+import frc.robot.subsystems.intake.Intake;
 
 public class IntakeCommands {
   private IntakeCommands() {}
 
-  public static Command deploy(IntakeDeploy deploy) {
+  public static Command deploy(Intake intake) {
     return Commands.startEnd(
       () -> {
-        deploy.deploy();
+        intake.deploy();
       }, () -> {
-        deploy.retract();
+        intake.retract();
       },
-      deploy);
+      intake);
   }
 
-  public static Command deployAndIntake(IntakeDeploy deploy) {
+  public static Command deployAndIntake(Intake intake) {
     return Commands.startEnd(
       () -> {
-        deploy.deploy();
+        intake.intake();
+        intake.deploy();
       }, () -> {
-        deploy.retract();
+        intake.stopIntake();
+        intake.retract();
       },
-      deploy);
+      intake);
   }
 }
 

@@ -24,7 +24,7 @@ public class IntakeDeployIOSim implements IntakeDeployIO {
   }
 
   @Override
-  public void updateInputs(IntakeDepoyIOInputs inputs) {
+  public void updateInputs(IntakeDeployIOInputs inputs) {
     if (closedLoop) {
       appliedVolts = pidController.calculate(sim.getAngularPositionRad());
     } else {
