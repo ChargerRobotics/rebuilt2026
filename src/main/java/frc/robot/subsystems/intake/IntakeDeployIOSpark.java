@@ -20,8 +20,8 @@ public class IntakeDeployIOSpark implements IntakeDeployIO {
   private final RelativeEncoder encoder;
   private final SparkClosedLoopController closedLoopController;
 
-  public IntakeDeployIOSpark(int id) {
-    this.sparkMax = new SparkMax(5, MotorType.kBrushless);
+  public IntakeDeployIOSpark() {
+    this.sparkMax = new SparkMax(IntakeConstants.deployCanId, MotorType.kBrushless);
     this.encoder = sparkMax.getEncoder();
     this.closedLoopController = sparkMax.getClosedLoopController();
 

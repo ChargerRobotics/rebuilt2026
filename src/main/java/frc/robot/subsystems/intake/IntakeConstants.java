@@ -9,6 +9,8 @@ public class IntakeConstants {
   public static double deployEncoderPositionFactor = 2 * Math.PI / deployReduction;
   public static double deployEncoderVelocityFactor = (2 * Math.PI) / 60.0 / deployReduction;
 
+  public static int deployCanId = 20;
+
   public static ArmFeedforward deployFeedforward = new ArmFeedforward(0, 0, 0);
   public static double deployKp = 0;
   public static double deployKd = 0;
