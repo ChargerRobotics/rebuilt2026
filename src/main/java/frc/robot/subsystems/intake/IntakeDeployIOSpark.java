@@ -57,6 +57,7 @@ public class IntakeDeployIOSpark implements IntakeDeployIO {
 
   @Override
   public void updateInputs(IntakeDeployIOInputs inputs) {
+    inputs.setpoint = Rotation2d.fromRadians(closedLoopController.getMAXMotionSetpointPosition());
     inputs.position = Rotation2d.fromRadians(encoder.getPosition());
     inputs.appliedVolts = sparkMax.getAppliedOutput() * sparkMax.getBusVoltage();
     inputs.currentAmps = sparkMax.getOutputCurrent();

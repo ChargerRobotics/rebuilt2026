@@ -24,12 +24,10 @@ public class IntakeDeploy {
 
   public void deploy() {
     io.setMAXMotionPosition(Rotation2d.kZero);
-    Logger.recordOutput("Intake/Deploy/Goal", 0.0);
   }
 
   public void retract() {
     io.setMAXMotionPosition(Rotation2d.fromDegrees(90));
-    Logger.recordOutput("Intake/Deploy/Goal", Math.PI / 2);
   }
 }
 
