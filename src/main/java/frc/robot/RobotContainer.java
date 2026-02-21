@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -38,6 +39,10 @@ import frc.robot.subsystems.led.Led;
 import frc.robot.subsystems.led.LedControlIO;
 import frc.robot.subsystems.led.LedControlIOCANdle;
 import frc.robot.subsystems.led.LedControlIOSim;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.shooter.ShooterIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
@@ -60,6 +65,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Intake intake;
+  private final Shooter shooter;
   private final Vision vision;
   private final Led led;
 
@@ -85,6 +91,7 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOReal(0), new ModuleIOReal(1), new ModuleIOReal(2), new ModuleIOReal(3));
         intake = new Intake(new IntakeRollerIOSpark(), new IntakeDeployIOSpark());
+        shooter = new Shooter(new ShooterIOSpark());
         vision = new Vision(new VisionIOLimelight("limelight", () -> drive.getRotation()), fieldLayout);
         led = new Led(new LedControlIOCANdle(50));
         break;
@@ -93,6 +100,7 @@ public class RobotContainer {
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
         intake = new Intake(new IntakeRollerIOSim(), new IntakeDeployIOSim());
+        shooter = new Shooter(new ShooterIOSim());
         vision = new Vision(new VisionIOSim(() -> drive.getRotation()), fieldLayout);
         led = new Led(new LedControlIOSim());
         break;
@@ -101,6 +109,7 @@ public class RobotContainer {
         // Replayed robot, disable IO implementations
         drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
         intake = new Intake(new IntakeRollerIO() {}, new IntakeDeployIO() {});
+        shooter = new Shooter(new ShooterIO() {});
         vision = new Vision(new VisionIO() {}, fieldLayout);
         led = new Led(new LedControlIO() {});
         break;
@@ -179,8 +188,10 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.rightTrigger()
-      .whileTrue(IntakeCommands.deployAndIntake(intake)
-        .alongWith());
+      .whileTrue(IntakeCommands.deployAndIntake(intake));
+
+    controller.leftTrigger()
+      .whileTrue(ShooterCommands.shoot(shooter));
   }
 
   /**
