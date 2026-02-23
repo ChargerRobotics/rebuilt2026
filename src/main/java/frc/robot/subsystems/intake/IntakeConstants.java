@@ -4,10 +4,10 @@ import edu.wpi.first.math.system.plant.DCMotor;
 
 public class IntakeConstants {
   public static final DCMotor rollerGearbox = DCMotor.getNEO(1);
-  public static final double rollerReduction = 4 / 1;
+  public static final double rollerReduction = 4.0 / 1.0;
 
   public static final DCMotor deployGearbox = DCMotor.getNEO(1);
-  public static final double deployReduction = 25 / 1;
+  public static final double deployReduction = 25.0 / 1.0;
   public static final double deployEncoderPositionFactor = 2 * Math.PI / deployReduction;
   public static final double deployEncoderVelocityFactor = (2 * Math.PI) / 60.0 / deployReduction;
 

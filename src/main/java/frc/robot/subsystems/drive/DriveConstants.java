@@ -56,7 +56,7 @@ public class DriveConstants {
   public static final int slipCurrent = 800;
   public static final int driveMotorCurrentLimit = 120;
   public static final double wheelRadiusMeters = Units.inchesToMeters(2);
-  public static final double driveMotorReduction = (50 * 17 * 45) / (14 * 27 * 15);
+  public static final double driveMotorReduction = (50.0 * 17.0 * 45.0) / (14.0 * 27.0 * 15.0);
   public static final DCMotor driveGearbox = DCMotor.getKrakenX60(1);
 
   // Drive encoder configuration
@@ -76,7 +76,7 @@ public class DriveConstants {
   // Turn motor configuration
   public static final boolean turnInverted = true;
   public static final int turnMotorCurrentLimit = 20;
-  public static final double turnMotorReduction = 150 / 7;
+  public static final double turnMotorReduction = 150.0 / 7.0;
   public static final DCMotor turnGearbox = DCMotor.getNEO(1);
 
   // Turn encoder configuration

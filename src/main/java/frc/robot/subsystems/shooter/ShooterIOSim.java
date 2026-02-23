@@ -19,7 +19,7 @@ public class ShooterIOSim implements ShooterIO {
 
   public ShooterIOSim() {
     this.sim = new DCMotorSim(
-      LinearSystemId.createDCMotorSystem(ShooterConstants.gearbox, 0.05, ShooterConstants.gearStepup),
+      LinearSystemId.createDCMotorSystem(ShooterConstants.gearbox, 0.01, ShooterConstants.gearStepup),
       ShooterConstants.gearbox
     );
   }
@@ -38,7 +38,7 @@ public class ShooterIOSim implements ShooterIO {
     inputs.setpointRpm = setpointRpm;
     inputs.atSetpoint = MathUtil.isNear(setpointRpm, sim.getAngularVelocityRPM(), 10);
     inputs.rpm = sim.getAngularVelocityRPM();
-    inputs.appliedVolts = 0;
+    inputs.appliedVolts = appliedVolts;
     inputs.currentAmps = sim.getCurrentDrawAmps();
   }
 
@@ -56,8 +56,9 @@ public class ShooterIOSim implements ShooterIO {
 
   @Override
   public void stop() {
-    closedLoop = true;
+    closedLoop = false;
     appliedVolts = 0;
+    sim.setAngularVelocity(0);
   }
 }
 

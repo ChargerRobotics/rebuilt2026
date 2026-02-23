@@ -37,6 +37,10 @@ public class DriveCommands {
   private static final double ANGLE_KD = 0.4;
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
+  private static final double DISTANCE_KP = 8;
+  private static final double DISTANCE_KD = 1;
+  private static final double DISTANCE_MAX_VELOCITY = DriveConstants.maxSpeedMetersPerSec;
+  private static final double DISTANCE_MAX_ACCELERATION = 15;
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
@@ -107,7 +111,6 @@ public class DriveCommands {
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       Supplier<Rotation2d> rotationSupplier) {
-
     // Create PID controller
     ProfiledPIDController angleController =
         new ProfiledPIDController(
@@ -149,6 +152,57 @@ public class DriveCommands {
 
         // Reset PID controller when command starts
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
+
+  public static Command joystickDriveAtAngleAndDistance(
+    Drive drive,
+    DoubleSupplier strafeSupplier,
+    Supplier<Pose2d> poseSupplier,
+    Supplier<Translation2d> setpointSupplier,
+    double distance
+  ) {
+    ProfiledPIDController angleController = new ProfiledPIDController(
+      ANGLE_KP,
+      0.0,
+      ANGLE_KD,
+      new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION)
+    );
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    ProfiledPIDController distanceController = new ProfiledPIDController(
+      DISTANCE_KP,
+      0,
+      DISTANCE_KD,
+      new TrapezoidProfile.Constraints(DISTANCE_MAX_VELOCITY, DISTANCE_MAX_ACCELERATION)
+    );
+
+    return Commands.run(
+      () -> {
+        Pose2d robotPose = poseSupplier.get();
+        Translation2d difference = robotPose.getTranslation().minus(setpointSupplier.get());
+        Rotation2d robotAngle = difference.getAngle().plus(Rotation2d.fromRotations(0.5));
+
+        double distanceMagnitude = distanceController.calculate(robotPose.getTranslation().getDistance(setpointSupplier.get()), distance);
+        Translation2d distanceSpeeds = difference.div(difference.getNorm()).times(distanceMagnitude);
+        Translation2d strafeVelocity = getLinearVelocityFromJoysticks(0, strafeSupplier.getAsDouble())
+          .rotateBy(robotAngle);
+
+        Translation2d velocity = distanceSpeeds.plus(strafeVelocity);
+
+        double omega = angleController.calculate(drive.getRotation().getRadians(), robotAngle.getRadians());
+
+        ChassisSpeeds speeds = new ChassisSpeeds(
+          velocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+          velocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+          omega
+        );
+        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+      },
+      drive
+    ).beforeStarting(() -> {
+      angleController.reset(drive.getRotation().getRadians());
+      distanceController.reset(poseSupplier.get().getTranslation().getDistance(setpointSupplier.get()));
+    });
   }
 
   /**
