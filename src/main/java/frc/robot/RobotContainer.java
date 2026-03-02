@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -137,6 +138,11 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
+    setupDashboard();
+  }
+
+  public void putDashboardData() {
+    SmartDashboard.putNumber("Game Time", DriverStation.getMatchTime());
   }
 
   /**
@@ -181,6 +187,10 @@ public class RobotContainer {
     controller.rightTrigger()
       .whileTrue(IntakeCommands.deployAndIntake(intake)
         .alongWith());
+  }
+
+  private void setupDashboard() {
+    SmartDashboard.putData(drive);
   }
 
   /**
