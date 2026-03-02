@@ -12,7 +12,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -23,6 +25,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.LedCommands;
+import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -39,6 +43,11 @@ import frc.robot.subsystems.led.Led;
 import frc.robot.subsystems.led.LedControlIO;
 import frc.robot.subsystems.led.LedControlIOCANdle;
 import frc.robot.subsystems.led.LedControlIOSim;
+import frc.robot.subsystems.led.RobotState;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.shooter.ShooterIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
@@ -61,6 +70,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Intake intake;
+  private final Shooter shooter;
   private final Vision vision;
   private final Led led;
 
@@ -86,6 +96,7 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOReal(0), new ModuleIOReal(1), new ModuleIOReal(2), new ModuleIOReal(3));
         intake = new Intake(new IntakeRollerIOSpark(), new IntakeDeployIOSpark());
+        shooter = new Shooter(new ShooterIOSpark());
         vision = new Vision(new VisionIOLimelight("limelight", () -> drive.getRotation()), fieldLayout);
         led = new Led(new LedControlIOCANdle(50));
         break;
@@ -94,6 +105,7 @@ public class RobotContainer {
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
         intake = new Intake(new IntakeRollerIOSim(), new IntakeDeployIOSim());
+        shooter = new Shooter(new ShooterIOSim());
         vision = new Vision(new VisionIOSim(() -> drive.getRotation()), fieldLayout);
         led = new Led(new LedControlIOSim());
         break;
@@ -102,6 +114,7 @@ public class RobotContainer {
         // Replayed robot, disable IO implementations
         drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
         intake = new Intake(new IntakeRollerIO() {}, new IntakeDeployIO() {});
+        shooter = new Shooter(new ShooterIO() {});
         vision = new Vision(new VisionIO() {}, fieldLayout);
         led = new Led(new LedControlIO() {});
         break;
@@ -185,8 +198,24 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.rightTrigger()
-      .whileTrue(IntakeCommands.deployAndIntake(intake)
-        .alongWith());
+      .whileTrue(IntakeCommands.deployAndIntake(intake).deadlineFor(LedCommands.addState(led, RobotState.INTAKING)));
+
+    controller.leftTrigger()
+      .whileTrue(
+        DriveCommands.joystickDriveAtAngleAndDistance(
+          drive,
+          () -> -controller.getLeftX(),
+          () -> switch (Constants.currentMode) {
+            case REAL -> vision.getPoseEstimate();
+            case SIM -> drive.getPose();
+            case REPLAY -> vision.getPoseEstimate();
+          },
+          () -> DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue ? new Translation2d(4.63, 4.03) : new Translation2d(11.9, 4.03),
+          2.3
+        )
+          .alongWith(ShooterCommands.shoot(shooter)
+          .deadlineFor(LedCommands.addState(led, RobotState.AIMING)))
+      );
   }
 
   private void setupDashboard() {

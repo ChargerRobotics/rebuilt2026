@@ -13,7 +13,7 @@ public class IntakeDeployIOSim implements IntakeDeployIO {
   private final PIDController pidController = new PIDController(IntakeConstants.deploySimKp, 0.0, IntakeConstants.deploySimKd);
 
   private boolean closedLoop = false;
-  private double appliedVolts = 0.0;
+  private double appliedVolts = 0;
 
   public IntakeDeployIOSim() {
     this.sim = new DCMotorSim(
@@ -34,6 +34,7 @@ public class IntakeDeployIOSim implements IntakeDeployIO {
     sim.setInputVoltage(MathUtil.clamp(appliedVolts, -12, 12));
     sim.update(0.02);
 
+    inputs.setpoint = Rotation2d.fromRadians(pidController.getSetpoint());
     inputs.position = Rotation2d.fromRadians(sim.getAngularPositionRad());
     inputs.appliedVolts = appliedVolts;
     inputs.currentAmps = sim.getCurrentDrawAmps();
