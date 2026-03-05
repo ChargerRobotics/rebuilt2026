@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -57,6 +58,7 @@ import frc.robot.subsystems.drive.ModuleIOReal;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -76,6 +78,8 @@ public class RobotContainer {
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
+
+  private final Field2d field = new Field2d();
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -155,7 +159,28 @@ public class RobotContainer {
   }
 
   public void putDashboardData() {
-    SmartDashboard.putNumber("Game Time", DriverStation.getMatchTime());
+    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
+    SmartDashboard.putString("Match", DriverStation.getMatchType().toString() + " " + DriverStation.getMatchNumber());
+
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+    String color = "#888";
+    if (alliance.isPresent()) {
+      switch (alliance.get()) {
+        case Red -> color = "#f0120f";
+        case Blue -> color = "#4047ed";
+      }
+    }
+    SmartDashboard.putString("Alliance", color);
+
+    RobotState state = led.getCurrentState();
+    SmartDashboard.putString("Robot State", state == null ? "None" : state.toString());
+
+    Pose2d pose = switch (Constants.currentMode) {
+      case REAL -> vision.getPoseEstimate();
+      case SIM -> drive.getPose();
+      case REPLAY -> vision.getPoseEstimate();
+    };
+    field.setRobotPose(pose);
   }
 
   /**
@@ -220,6 +245,7 @@ public class RobotContainer {
 
   private void setupDashboard() {
     SmartDashboard.putData(drive);
+    SmartDashboard.putData(field);
   }
 
   /**

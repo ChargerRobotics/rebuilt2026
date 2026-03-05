@@ -37,8 +37,12 @@ public class Led extends SubsystemBase {
     updateAnimation();
   }
 
+  public RobotState getCurrentState() {
+    return states.isEmpty() ? null : states.first();
+  }
+
   public void updateAnimation() {
-    ControlRequest animation = states.size() == 0 ? DEFAULT_ANIMATION : states.first().getAnimation();
+    ControlRequest animation = states.isEmpty() ? DEFAULT_ANIMATION : getCurrentState().getAnimation();
     io.request(animation);
   }
 }
