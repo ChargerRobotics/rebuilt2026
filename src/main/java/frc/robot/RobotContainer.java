@@ -18,8 +18,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -58,7 +56,6 @@ import frc.robot.subsystems.drive.ModuleIOReal;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Optional;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -78,8 +75,6 @@ public class RobotContainer {
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
-
-  private final Field2d field = new Field2d();
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -101,7 +96,9 @@ public class RobotContainer {
         drive = new Drive(new GyroIOPigeon2(), new ModuleIOReal(0), new ModuleIOReal(1), new ModuleIOReal(2), new ModuleIOReal(3));
         intake = new Intake(new IntakeRollerIOSpark(), new IntakeDeployIOSpark());
         shooter = new Shooter(new ShooterIOSpark());
-        vision = new Vision(new VisionIOLimelight("limelight", () -> drive.getRotation()), fieldLayout);
+        vision = new Vision(new VisionIOLimelight("limelight", () -> drive.getRotation()), fieldLayout, (pose, timestamp, stdDevs) -> {
+          drive.addVisionMeasurement(pose, timestamp, stdDevs);
+        });
         led = new Led(new LedControlIOCANdle(50));
         break;
 
@@ -110,7 +107,7 @@ public class RobotContainer {
         drive = new Drive(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
         intake = new Intake(new IntakeRollerIOSim(), new IntakeDeployIOSim());
         shooter = new Shooter(new ShooterIOSim());
-        vision = new Vision(new VisionIOSim(() -> drive.getRotation()), fieldLayout);
+        vision = new Vision(new VisionIOSim(() -> drive.getRotation()), fieldLayout, (pose, timestamp, stdDevs) -> {});
         led = new Led(new LedControlIOSim());
         break;
 
@@ -119,7 +116,7 @@ public class RobotContainer {
         drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
         intake = new Intake(new IntakeRollerIO() {}, new IntakeDeployIO() {});
         shooter = new Shooter(new ShooterIO() {});
-        vision = new Vision(new VisionIO() {}, fieldLayout);
+        vision = new Vision(new VisionIO() {}, fieldLayout, (pose, timestamp, stdDevs) -> {});
         led = new Led(new LedControlIO() {});
         break;
     }
@@ -155,32 +152,6 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
-    setupDashboard();
-  }
-
-  public void putDashboardData() {
-    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
-    SmartDashboard.putString("Match", DriverStation.getMatchType().toString() + " " + DriverStation.getMatchNumber());
-
-    Optional<Alliance> alliance = DriverStation.getAlliance();
-    String color = "#888";
-    if (alliance.isPresent()) {
-      switch (alliance.get()) {
-        case Red -> color = "#f0120f";
-        case Blue -> color = "#4047ed";
-      }
-    }
-    SmartDashboard.putString("Alliance", color);
-
-    RobotState state = led.getCurrentState();
-    SmartDashboard.putString("Robot State", state == null ? "None" : state.toString());
-
-    Pose2d pose = switch (Constants.currentMode) {
-      case REAL -> vision.getPoseEstimate();
-      case SIM -> drive.getPose();
-      case REPLAY -> vision.getPoseEstimate();
-    };
-    field.setRobotPose(pose);
   }
 
   /**
@@ -230,22 +201,13 @@ public class RobotContainer {
         DriveCommands.joystickDriveAtAngleAndDistance(
           drive,
           () -> -controller.getLeftX(),
-          () -> switch (Constants.currentMode) {
-            case REAL -> vision.getPoseEstimate();
-            case SIM -> drive.getPose();
-            case REPLAY -> vision.getPoseEstimate();
-          },
+          () -> drive.getPose(),
           () -> DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue ? new Translation2d(4.63, 4.03) : new Translation2d(11.9, 4.03),
           2.3
         )
           .alongWith(ShooterCommands.shoot(shooter)
           .deadlineFor(LedCommands.addState(led, RobotState.AIMING)))
       );
-  }
-
-  private void setupDashboard() {
-    SmartDashboard.putData(drive);
-    SmartDashboard.putData(field);
   }
 
   /**
@@ -255,6 +217,14 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public Drive getDrive() {
+    return drive;
+  }
+
+  public Led getLed() {
+    return led;
   }
 
   public Vision getVision() {

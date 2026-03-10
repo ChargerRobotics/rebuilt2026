@@ -28,8 +28,10 @@ import org.littletonrobotics.urcl.URCL;
  * project.
  */
 public class Robot extends LoggedRobot {
+  private final RobotContainer robotContainer;
+  private final DashboardManager dashboardManager;
+
   private Command autonomousCommand;
-  private RobotContainer robotContainer;
 
   public Robot() {
     WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
@@ -80,6 +82,7 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+    dashboardManager = new DashboardManager(robotContainer);
   }
 
   /** This function is called periodically during all modes. */
@@ -99,7 +102,7 @@ public class Robot extends LoggedRobot {
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
 
-    robotContainer.putDashboardData();
+    dashboardManager.updateValues();
   }
 
   /** This function is called once when the robot is disabled. */

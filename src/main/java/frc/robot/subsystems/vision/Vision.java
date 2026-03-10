@@ -3,7 +3,7 @@ package frc.robot.subsystems.vision;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -12,9 +12,12 @@ public class Vision extends SubsystemBase {
   private final VisionIOInputsAutoLogged inputs = new VisionIOInputsAutoLogged();
   private final AprilTagFieldLayout fieldLayout;
 
-  public Vision(VisionIO io, AprilTagFieldLayout fieldLayout) {
+  private final VisionConsumer visionConsumer;
+
+  public Vision(VisionIO io, AprilTagFieldLayout fieldLayout, VisionConsumer visionConsumer) {
     this.io = io;
     this.fieldLayout = fieldLayout;
+    this.visionConsumer = visionConsumer;
   }
 
   @Override
@@ -27,10 +30,8 @@ public class Vision extends SubsystemBase {
       tagPoses[i] = fieldLayout.getTagPose(inputs.trackedTags[i].id()).orElse(new Pose3d());
     }
     Logger.recordOutput("VisionTargets", tagPoses);
-  }
 
-  public Pose2d getPoseEstimate() {
-    return inputs.latestPose;
+    visionConsumer.addVisionMeasurement(inputs.latestPose, inputs.timestampSeconds, VecBuilder.fill(0.7, 0.7, 9999999));
   }
 
   public void seedImu() {
