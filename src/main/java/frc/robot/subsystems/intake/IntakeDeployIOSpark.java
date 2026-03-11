@@ -32,7 +32,8 @@ public class IntakeDeployIOSpark implements IntakeDeployIO {
       .voltageCompensation(12);
     config
       .encoder
-      .positionConversionFactor(IntakeConstants.deployEncoderPositionFactor);
+      .positionConversionFactor(IntakeConstants.deployEncoderPositionFactor)
+      .velocityConversionFactor(IntakeConstants.deployEncoderVelocityFactor);
     config
       .closedLoop
       .maxMotion
@@ -57,8 +58,9 @@ public class IntakeDeployIOSpark implements IntakeDeployIO {
 
   @Override
   public void updateInputs(IntakeDeployIOInputs inputs) {
-    inputs.setpoint = Rotation2d.fromRadians(closedLoopController.getMAXMotionSetpointPosition());
-    inputs.position = Rotation2d.fromRadians(encoder.getPosition());
+    inputs.setpointRad = closedLoopController.getMAXMotionSetpointPosition();
+    inputs.positionRad = encoder.getPosition();
+    inputs.velocityRadPerSec = encoder.getVelocity();
     inputs.appliedVolts = sparkMax.getAppliedOutput() * sparkMax.getBusVoltage();
     inputs.currentAmps = sparkMax.getOutputCurrent();
   }

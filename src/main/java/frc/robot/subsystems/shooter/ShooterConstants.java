@@ -4,7 +4,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 
 public class ShooterConstants {
   public static final DCMotor gearbox = DCMotor.getNeoVortex(2);
-  public static final double gearStepup = 2.0 / 1.0;
+  public static final double gearStepup = 1;
 
   public static final int leftCanId = 30;
   public static final int rightCanId = 31;
@@ -15,10 +15,10 @@ public class ShooterConstants {
   public static final double kD = 0;
   public static final double kS = 0;
   public static final double kV = 0;
-  public static final double kA = 0;
 
-  public static final double simKp = 200;
-  public static final double simKi = 0;
+  public static final double simKp = 0.002605;
   public static final double simKd = 0;
+  public static final double simKs = 0;
+  public static final double simKv = 0.0017387;
 }
 

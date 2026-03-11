@@ -30,11 +30,11 @@ public class IntakeConstants {
   public static final double deployKv = 0;
   public static final double deployKa = 0;
 
-  public static final double deploySimKp = 5;
+  public static final double deploySimKp = 0.73666;
   public static final double deploySimKd = 0;
-  public static final double deploySimKg = 0;
+  public static final double deploySimKg = 0.00013553;
   public static final double deploySimKs = 0;
-  public static final double deploySimKv = 0;
-  public static final double deploySimKa = 0;
+  public static final double deploySimKv = 0.4961;
+  public static final double deploySimKa = 0.37015;
 }
 

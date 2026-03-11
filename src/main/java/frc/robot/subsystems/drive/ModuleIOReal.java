@@ -118,7 +118,6 @@ public class ModuleIOReal implements ModuleIO {
     turnController = turnSpark.getClosedLoopController();
 
     // Configure drive motor
-    // TODO: configure
     var driveConfig = new TalonFXConfiguration();
     driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     driveConfig.Slot0 = new Slot0Configs()

@@ -10,7 +10,7 @@ public class IntakeDeploy {
 
   public IntakeDeploy(IntakeDeployIO io) {
     this.io = io;
-    retract();
+    // retract();
   }
 
   public void periodic() {

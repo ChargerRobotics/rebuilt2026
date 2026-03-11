@@ -11,8 +11,8 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class ShooterIOSim implements ShooterIO {
   private final DCMotorSim sim;
 
-  private final PIDController pidController = new PIDController(ShooterConstants.simKp, ShooterConstants.simKi, ShooterConstants.simKd);
-  
+  private final PIDController pidController = new PIDController(ShooterConstants.simKp, 0, ShooterConstants.simKd);
+
   private boolean closedLoop = false;
   private double setpointRpm = 0;
   private double appliedVolts = 0;
@@ -27,7 +27,7 @@ public class ShooterIOSim implements ShooterIO {
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
     if (closedLoop) {
-      appliedVolts = pidController.calculate(sim.getAngularVelocityRPM());
+      appliedVolts = pidController.calculate(sim.getAngularVelocityRPM()) + ShooterConstants.simKs + ShooterConstants.simKv * setpointRpm;
     } else {
       pidController.reset();
     }
@@ -35,6 +35,7 @@ public class ShooterIOSim implements ShooterIO {
     sim.setInputVoltage(MathUtil.clamp(appliedVolts, -12, 12));
     sim.update(0.02);
 
+    inputs.positionRot = sim.getAngularPositionRotations();
     inputs.setpointRpm = setpointRpm;
     inputs.atSetpoint = MathUtil.isNear(setpointRpm, sim.getAngularVelocityRPM(), 10);
     inputs.rpm = sim.getAngularVelocityRPM();
@@ -51,6 +52,7 @@ public class ShooterIOSim implements ShooterIO {
   @Override
   public void setVelocity(AngularVelocity velocity) {
     closedLoop = true;
+    setpointRpm = velocity.in(RPM);
     pidController.setSetpoint(velocity.in(RPM));
   }
 
@@ -58,6 +60,7 @@ public class ShooterIOSim implements ShooterIO {
   public void stop() {
     closedLoop = false;
     appliedVolts = 0;
+    setpointRpm = 0;
     sim.setAngularVelocity(0);
   }
 }

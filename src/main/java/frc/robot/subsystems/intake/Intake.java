@@ -1,8 +1,9 @@
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -24,7 +25,7 @@ public class Intake extends SubsystemBase {
         null,
         state -> Logger.recordOutput("Intake/Deploy/SysIdState", state.toString())
       ),
-      new SysIdRoutine.Mechanism(voltage -> roller.setOpenLoop(voltage.in(Units.Volts)), null, this)
+      new SysIdRoutine.Mechanism(voltage -> deploy.setOpenLoop(voltage.in(Volts)), null, this)
     );
   }
 

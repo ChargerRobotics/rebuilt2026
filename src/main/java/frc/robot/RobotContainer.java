@@ -126,29 +126,61 @@ public class RobotContainer {
 
     // Set up SysId routines
     autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+      "Drive Wheel Radius Characterization",
+      DriveCommands.wheelRadiusCharacterization(drive)
+    );
     autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+      "Drive Simple FF Characterization",
+      DriveCommands.feedforwardCharacterization(drive)
+    );
     autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+      "Drive SysId (Quasistatic Forward)",
+      drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+    );
     autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+      "Drive SysId (Quasistatic Reverse)",
+      drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+    );
     autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+      "Drive SysId (Dynamic Forward)",
+      drive.sysIdDynamic(SysIdRoutine.Direction.kForward)
+    );
     autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+      "Drive SysId (Dynamic Reverse)",
+      drive.sysIdDynamic(SysIdRoutine.Direction.kReverse)
+    );
     autoChooser.addOption(
-        "Deploy SysId (Quasistatic Forward)",
-        intake.deploySysIdQuasistatic(SysIdRoutine.Direction.kForward));
+      "Deploy SysId (Quasistatic Forward)",
+      intake.deploySysIdQuasistatic(SysIdRoutine.Direction.kForward)
+    );
     autoChooser.addOption(
-        "Deploy SysId (Quasistatic Reverse)",
-        intake.deploySysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+      "Deploy SysId (Quasistatic Reverse)",
+      intake.deploySysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+    );
     autoChooser.addOption(
-        "Deploy SysId (Dynamic Forward)", intake.deploySysIdDynamic(SysIdRoutine.Direction.kForward));
+      "Deploy SysId (Dynamic Forward)",
+      intake.deploySysIdDynamic(SysIdRoutine.Direction.kForward)
+    );
     autoChooser.addOption(
-        "Deploy SysId (Dynamic Reverse)", intake.deploySysIdDynamic(SysIdRoutine.Direction.kReverse));
+      "Deploy SysId (Dynamic Reverse)",
+      intake.deploySysIdDynamic(SysIdRoutine.Direction.kReverse)
+    );
+    autoChooser.addOption(
+      "Shooter SysId (Quasistatic Forward)",
+      shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+    );
+    autoChooser.addOption(
+      "Shooter SysId (Quasistatic Reverse)",
+      shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+    );
+    autoChooser.addOption(
+      "Shooter SysId (Dynamic Forward)",
+      shooter.sysIdDynamic(SysIdRoutine.Direction.kForward)
+    );
+    autoChooser.addOption(
+      "Shooter SysId (Dynamic Reverse)",
+      shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse)
+    );
 
     // Configure the button bindings
     configureButtonBindings();

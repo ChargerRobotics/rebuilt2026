@@ -51,6 +51,7 @@ public class ShooterIOSpark implements ShooterIO {
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
+    inputs.positionRot = encoder.getPosition();
     inputs.setpointRpm = closedLoopController.getSetpoint();
     inputs.atSetpoint = closedLoopController.isAtSetpoint();
     inputs.rpm = encoder.getVelocity();

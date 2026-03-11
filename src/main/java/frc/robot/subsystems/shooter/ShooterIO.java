@@ -7,6 +7,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 public interface ShooterIO {
   @AutoLog
   public static class ShooterIOInputs {
+    public double positionRot = 0;
     public double setpointRpm = 0;
     public boolean atSetpoint = true;
     public double rpm = 0;
