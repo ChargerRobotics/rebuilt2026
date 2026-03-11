@@ -7,32 +7,25 @@
       "height": 1003,
       "state": {
         "sidebar": {
-          "width": 336,
+          "width": 310,
           "expanded": [
             "/Drive",
             "/RealOutputs",
             "/RealOutputs/SwerveStates",
             "/RealOutputs/SwerveChassisSpeeds",
             "/RealOutputs/Odometry",
-            "/AdvantageKit",
             "/AdvantageKit/RealOutputs",
-            "/AdvantageKit/RealOutputs/SwerveStates",
-            "/AdvantageKit/RealOutputs/SwerveChassisSpeeds",
-            "/AdvantageKit/RealOutputs/Odometry",
-            "/AdvantageKit/Intake",
             "/AdvantageKit/Intake/Deploy",
             "/AdvantageKit/RealOutputs/Intake",
             "/AdvantageKit/RealOutputs/Intake/Deploy",
-            "/AdvantageKit/Drive",
-            "/AdvantageKit/Drive/Module1",
-            "/AdvantageKit/Drive/Module2",
-            "/AdvantageKit/Drive/Module3",
-            "/AdvantageKit/Drive/Module0",
-            "/AdvantageKit/RealOutputs/SwerveStates/Measured",
             "/AdvantageKit/RealOutputs/SwerveStates/Measured/0",
-            "/AdvantageKit/RealOutputs/SwerveStates/SetpointsOptimized",
             "/AdvantageKit/RealOutputs/SwerveStates/SetpointsOptimized/0",
-            "/AdvantageKit/RealOutputs/SwerveChassisSpeeds/Measured"
+            "/AdvantageKit/RealOutputs/SwerveChassisSpeeds/Measured",
+            "/SmartDashboard",
+            "/AdvantageKit",
+            "/AdvantageKit/RealOutputs/Shooter",
+            "/AdvantageKit/RealOutputs/Drive",
+            "/AdvantageKit/Shooter"
           ]
         },
         "tabs": {
@@ -112,17 +105,8 @@
               "controller": {
                 "sources": [
                   {
-                    "type": "robot",
-                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "model": "Crab Bot"
-                    }
-                  },
-                  {
                     "type": "trajectory",
-                    "logKey": "/RealOutputs/Odometry/Trajectory",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Trajectory",
                     "logType": "Pose2d[]",
                     "visible": true,
                     "options": {
@@ -132,12 +116,31 @@
                   },
                   {
                     "type": "ghost",
-                    "logKey": "/RealOutputs/Odometry/TrajectorySetpoint",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/TrajectorySetpoint",
                     "logType": "Pose2d",
                     "visible": true,
                     "options": {
                       "model": "2026 KitBot",
                       "color": "#ff8c00"
+                    }
+                  },
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "Crab Bot"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/Vision/LatestPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "Crab Bot",
+                      "color": "#00ff00"
                     }
                   }
                 ],
@@ -148,17 +151,40 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  2.7403016805885354,
-                  8.386443590939198,
-                  1.4623204587435998
+                  -14.977696498685903,
+                  10.58432418662393,
+                  -0.5539956667759209
                 ],
                 "cameraTarget": [
-                  -3.081848824815828,
-                  3.085803765290412,
-                  2.149308748930613
+                  0.4817966078345811,
+                  -3.546586870685788,
+                  -0.5925044460549148
                 ]
               },
-              "controlsHeight": 200
+              "controlsHeight": 0
+            },
+            {
+              "type": 8,
+              "title": "Joysticks",
+              "controller": [
+                "Xbox Controller (Blue)",
+                "None",
+                "None",
+                "None",
+                "None",
+                "None"
+              ],
+              "controllerUUID": "w8himxi68cxk652z2wv4prxmyhjal77n",
+              "renderer": null,
+              "controlsHeight": 85
+            },
+            {
+              "type": 12,
+              "title": "Metadata",
+              "controller": null,
+              "controllerUUID": "jnliwmnnjtlk7g6oa1bsoj1cmefzanby",
+              "renderer": null,
+              "controlsHeight": 0
             },
             {
               "type": 1,
@@ -478,7 +504,7 @@
                 "leftSources": [
                   {
                     "type": "stepped",
-                    "logKey": "NT:/AdvantageKit/Intake/Deploy/Position/value",
+                    "logKey": "NT:/AdvantageKit/Intake/Deploy/PositionRad",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -488,7 +514,7 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "NT:/AdvantageKit/RealOutputs/Intake/Deploy/Goal",
+                    "logKey": "NT:/AdvantageKit/Intake/Deploy/SetpointRad",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -513,6 +539,51 @@
                 "rightFilter": 0
               },
               "controllerUUID": "1gaxxz4bx1aht1czlft933beq1eerbgx",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "Flywheel Tuning",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/Shooter/Rpm",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/Shooter/SetpointRpm",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "rk3dbu01himjg74qlzpensprijr1nm5o",
               "renderer": null,
               "controlsHeight": 200
             }
