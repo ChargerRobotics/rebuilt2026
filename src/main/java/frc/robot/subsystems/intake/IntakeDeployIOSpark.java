@@ -52,7 +52,7 @@ public class IntakeDeployIOSpark implements IntakeDeployIO {
       .kV(IntakeConstants.deployKv)
       .kA(IntakeConstants.deployKa)
       .kCos(IntakeConstants.deployKg)
-      .kCosRatio(1 / (2 * Math.PI));
+      .kCosRatio(1.0 / (2.0 * Math.PI));
     SparkUtil.tryUntilOk(sparkMax, 5, () -> sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 

@@ -12,7 +12,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -44,6 +43,7 @@ import frc.robot.subsystems.led.LedControlIOCANdle;
 import frc.robot.subsystems.led.LedControlIOSim;
 import frc.robot.subsystems.led.RobotState;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.shooter.ShooterIOSpark;
@@ -151,19 +151,19 @@ public class RobotContainer {
     );
     autoChooser.addOption(
       "Deploy SysId (Quasistatic Forward)",
-      intake.deploySysIdQuasistatic(SysIdRoutine.Direction.kForward)
+      intake.getDeploy().sysIdQuasistatic(SysIdRoutine.Direction.kForward)
     );
     autoChooser.addOption(
       "Deploy SysId (Quasistatic Reverse)",
-      intake.deploySysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+      intake.getDeploy().sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
     );
     autoChooser.addOption(
       "Deploy SysId (Dynamic Forward)",
-      intake.deploySysIdDynamic(SysIdRoutine.Direction.kForward)
+      intake.getDeploy().sysIdDynamic(SysIdRoutine.Direction.kForward)
     );
     autoChooser.addOption(
       "Deploy SysId (Dynamic Reverse)",
-      intake.deploySysIdDynamic(SysIdRoutine.Direction.kReverse)
+      intake.getDeploy().sysIdDynamic(SysIdRoutine.Direction.kReverse)
     );
     autoChooser.addOption(
       "Shooter SysId (Quasistatic Forward)",
@@ -226,20 +226,49 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.rightTrigger()
-      .whileTrue(IntakeCommands.deployAndIntake(intake).deadlineFor(LedCommands.addState(led, RobotState.INTAKING)));
+      .whileTrue(Commands.parallel(
+        IntakeCommands.intake(intake),
+        DriveCommands.joystickDrive(
+          drive,
+          () -> -controller.getLeftY() * 0.75,
+          () -> -controller.getLeftX() * 0.75,
+          () -> -controller.getRightX() * 0.75
+        ),
+        LedCommands.addState(led, RobotState.INTAKING)
+      ));
+
+    controller.rightBumper()
+      .toggleOnTrue(IntakeCommands.deploy(intake));
 
     controller.leftTrigger()
       .whileTrue(
         DriveCommands.joystickDriveAtAngleAndDistance(
           drive,
           () -> -controller.getLeftX(),
-          () -> drive.getPose(),
-          () -> DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue ? new Translation2d(4.63, 4.03) : new Translation2d(11.9, 4.03),
-          2.3
+          () -> DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue ? FieldConstants.BLUE_HUB_POSITION_METERS : FieldConstants.RED_HUB_POSITION_METERS,
+          ShooterConstants.optimalShootDistanceMeters
         )
-          .alongWith(ShooterCommands.shoot(shooter)
-          .deadlineFor(LedCommands.addState(led, RobotState.AIMING)))
+          .alongWith(
+            ShooterCommands.shoot(shooter),
+            Commands.sequence(
+              Commands.waitSeconds(0.1),
+              Commands.sequence(
+                Commands.waitUntil(() -> shooter.atSetpoint()),
+                DriveCommands.waitUntilAtDistance(
+                  drive,
+                  () -> DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue ? FieldConstants.BLUE_HUB_POSITION_METERS : FieldConstants.RED_HUB_POSITION_METERS,
+                  ShooterConstants.optimalShootDistanceMeters,
+                  0.1
+                )
+              )
+                .deadlineFor(LedCommands.addState(led, RobotState.AIMING))
+                .andThen(LedCommands.addState(led, RobotState.SHOOTING))
+            )
+          )
       );
+
+    controller.leftBumper()
+      .whileTrue(ShooterCommands.shoot(shooter));
   }
 
   /**

@@ -44,7 +44,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void spinUp() {
-    io.setVelocity(RPM.of(4500));
+    io.setVelocity(RPM.of(2000));
   }
 
   public void stop() {

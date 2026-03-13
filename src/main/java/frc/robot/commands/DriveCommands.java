@@ -157,7 +157,6 @@ public class DriveCommands {
   public static Command joystickDriveAtAngleAndDistance(
     Drive drive,
     DoubleSupplier strafeSupplier,
-    Supplier<Pose2d> poseSupplier,
     Supplier<Translation2d> setpointSupplier,
     double distance
   ) {
@@ -178,13 +177,13 @@ public class DriveCommands {
 
     return Commands.run(
       () -> {
-        Pose2d robotPose = poseSupplier.get();
+        Pose2d robotPose = drive.getPose();
         Translation2d difference = robotPose.getTranslation().minus(setpointSupplier.get());
-        Rotation2d robotAngle = difference.getAngle().plus(Rotation2d.fromRotations(0.5));
+        Rotation2d robotAngle = difference.getAngle();
 
         double distanceMagnitude = distanceController.calculate(robotPose.getTranslation().getDistance(setpointSupplier.get()), distance);
         Translation2d distanceSpeeds = difference.div(difference.getNorm()).times(distanceMagnitude);
-        Translation2d strafeVelocity = getLinearVelocityFromJoysticks(0, strafeSupplier.getAsDouble())
+        Translation2d strafeVelocity = getLinearVelocityFromJoysticks(0, -strafeSupplier.getAsDouble())
           .rotateBy(robotAngle);
 
         Translation2d velocity = distanceSpeeds.plus(strafeVelocity);
@@ -201,7 +200,14 @@ public class DriveCommands {
       drive
     ).beforeStarting(() -> {
       angleController.reset(drive.getRotation().getRadians());
-      distanceController.reset(poseSupplier.get().getTranslation().getDistance(setpointSupplier.get()));
+      distanceController.reset(drive.getPose().getTranslation().getDistance(setpointSupplier.get()));
+    });
+  }
+
+  public static Command waitUntilAtDistance(Drive drive, Supplier<Translation2d> locationSupplier, double distance, double tolerance) {
+    return Commands.waitUntil(() -> {
+      double robotDistance = drive.getPose().getTranslation().getDistance(locationSupplier.get());
+      return MathUtil.isNear(distance, robotDistance, tolerance);
     });
   }
 

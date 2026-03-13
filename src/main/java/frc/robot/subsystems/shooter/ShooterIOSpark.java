@@ -29,7 +29,7 @@ public class ShooterIOSpark implements ShooterIO {
     SparkFlex right = new SparkFlex(ShooterConstants.rightCanId, MotorType.kBrushless);
 
     SparkFlexConfig rightConfig = new SparkFlexConfig();
-    rightConfig.follow(sparkFlex);
+    rightConfig.follow(sparkFlex, true);
     SparkUtil.tryUntilOk(right, 5, () -> right.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
 
     SparkFlexConfig config = new SparkFlexConfig();
